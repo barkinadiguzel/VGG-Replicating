@@ -1,4 +1,3 @@
-# fc_only_layer.py
 import torch.nn as nn
 
 class FCOnlyLayer(nn.Module):
