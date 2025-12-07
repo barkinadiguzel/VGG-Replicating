@@ -1,61 +1,78 @@
-# 🖋 VGG-PyTorch-Implementation
+# 🖋 VGG16-PyTorch-Implementation
 
-This repository contains a replication of the **VGG16 (Very Deep Convolutional Networks for Large-Scale Image Recognition)** model. The goal is to reproduce the **VGG16 architecture** for ImageNet classification using PyTorch.  
+This repository contains a PyTorch implementation of **VGG16**, reproducing the architecture from the paper **Very Deep Convolutional Networks for Large-Scale Image Recognition (ICLR 2015)**.  
 
-> ⚠️ Note: flatten_layer.py and maxpool_layer.py are also included in src/layers/, but they are mostly provided for completeness. The VGG16 model is primarily built using conv_block.py and fc_layer.py. Users who want to implement other VGG variants (from A to E) or custom architectures can easily use these files to create their desired models.
+- Implements **VGG16 configuration** with stacked 3×3 convolutional blocks, ReLU activations, max-pooling, flattening, and fully connected layers (4096 → 4096 → 1000).  
+- Designed for ImageNet classification while allowing easy extension to other VGG variants (A–E) or custom networks.  
 
-- Only the **VGG16 configuration** was fully implemented.
-- The architecture follows multiple convolutional blocks with 3×3 convolutions, ReLU activations, max-pooling layers, flattening, and fully connected layers (4096 → 4096 → 1000).  
-**Paper**: [Very Deep Convolutional Networks for Large-Scale Image Recognition (ICLR 2015)](https://arxiv.org/abs/1409.1556)
+**Paper**: [VGG16 Paper (ICLR 2015)](https://arxiv.org/abs/1409.1556)
 
 ---
 
-## 🏗 Model Overview
+## 🖼 Overview – VGG16 Architecture
+
+- **Convolutional Blocks:** Stacked 3×3 convolutions with ReLU activations.  
+- **Max-Pooling Layers:** Reduce spatial dimensions, provide translation invariance.  
+- **Flatten Layer:** Converts convolutional feature maps to a vector for fully connected layers.  
+- **Fully Connected Layers:** FC6 → FC7 → FC8 (4096 → 4096 → 1000) with dropout (0.5) on first two layers.  
+- **Input/Output:** 224×224×3 images, output 1000-class softmax probabilities.  
+- **Key Idea:** Deeper configurations with small stacked filters (D, E) achieve better accuracy than shallower variants (A–C).  
+
+![VGG16 Overview](images/figmix.jpg)  
+*Figure:* Unified visual of VGG16 architecture combining convolutional, pooling, and fully connected layers.
+
+---
+
+## 🔑 Key Formulas – VGG16
+
+1. **Convolutional Layer:**  
+
+$$
+y_{i,j,k}^{(l)} = f\Bigg(\sum_{c=1}^{C_{l-1}} \big(x^{(l-1)}_c * W^{(l)}_{k,c}\big)_{i,j} + b^{(l)}_k\Bigg)
+$$
+
+- $x^{(l-1)}_c$ = input feature map of previous layer  
+- $W^{(l)}_{k,c}$ = convolution kernel  
+- $b^{(l)}_k$ = bias  
+- $f$ = ReLU activation
+
+2. **Fully Connected Layer:**  
+
+$$
+y = f(Wx + b)
+$$
+
+- Flattens convolutional output  
+- Maps to output classes with softmax at final layer  
+- Optional dropout applied to first two FC layers
+
+> These formulas summarize **VGG16’s core computations**: hierarchical feature extraction and end-to-end classification learning.
+
+---
+
+## 🏗 Project Structure
 
 ```bash
-VGG-Replicating/
+VGG16-PyTorch-Implementation/
 │
 ├── src/
 │   ├── layers/
-│   │   ├── conv_block.py       → 3x3 Conv + ReLU + N repeats
-│   │   ├── maxpool_layer.py    → MaxPool2d layer
-│   │   ├── flatten_layer.py    → Flatten (Conv→FC transition)
-│   │   └── fc_layer.py         → Fully Connected Layer + ReLU/Dropout
+│   │   ├── conv_block.py       # 3x3 Conv + ReLU + N repeats
+│   │   ├── maxpool_layer.py    # MaxPool2d layer
+│   │   ├── flatten_layer.py    # Flatten (Conv→FC transition)
+│   │   └── fc_layer.py         # Fully Connected Layer + ReLU/Dropout
 │   │
 │   ├── model/
-│   │   └── vgg.py              → Conv Blocks + MaxPool + Flatten + FC Layers Assembly
+│   │   └── vgg.py              # Conv Blocks + MaxPool + Flatten + FC Layers Assembly
 │   │
-│   ├── pretrain.py             → Training loop
-│   └── config.py               → Hyperparameters, dataset path, optimizer
+│   ├── pretrain.py             # Training loop
+│   └── config.py               # Hyperparameters, dataset path, optimizer
 │
-├── images/                      → Architecture and figures
-└── requirements.txt             → Python dependencies
+├── images/                     
+│   └── figmix.jpg
+└── requirements.txt
+
 ```
-
----
-
-## 📊 Figures
-
-### Figure 1 – VGG Configurations (Table 1 & 2)
-![VGG Configurations](images/table1_2.png)
-
-- Shows VGG network configurations A–E with convolutional blocks and max-pooling layers.  
-- **Observations**:  
-  - As depth increases (A → E), classification error generally decreases.  
-  - Smaller 3×3 conv filters stacked deeper (D, E) outperform shallower networks with larger filters (A, B).  
-  - Table 1: Layer configuration details per model.  
-  - Table 2: Number of parameters and computational cost per configuration.  
-
-### Figure 2 – Fully Connected Layers Comparison (Table 3)
-![FC Layers Comparison](images/table3.png)
-
-- Shows FC6–FC8 layers after flattening the last conv block output, across A–E.  
-- **Observations**:  
-  - Dropout is applied to the first two fully connected layers (0.5 ratio) across all configurations.  
-  - Top-1 and Top-5 error rates improve as we move from A → E.  
-  - Deep networks (D, E) with small filters achieve lower errors than shallow networks (A, B, C).  
-  - Training with multi-scale inputs further enhances generalization.  
-- Dimensions of FC layers: 4096 → 4096 → 1000 features.  
 
 ---
 
